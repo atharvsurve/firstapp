@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -68,52 +69,130 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ? "https://www.gravatar.com/avatar/${md5.convert(utf8.encode(_userData!['email']))}?d=identicon"
         : "https://www.gravatar.com/avatar/?d=identicon";
 
+    String formattedCreatedAt = _userData?['createdAt'] != null
+        ? DateFormat.yMMMd().format(DateTime.parse(_userData!['createdAt']))
+        : "N/A";
+
+    String formattedLastLogin = _userData?['lastSignInAt'] != null
+        ? DateFormat.yMMMd().format(DateTime.parse(_userData!['lastSignInAt']))
+        : "N/A";
+
     return Scaffold(
       backgroundColor: Color(0xFF222831),
       appBar: AppBar(
-        title: Text("Profile", style: TextStyle(color: Colors.white,fontSize: 20, fontWeight: FontWeight.bold)),
+        title: Text("Profile", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
         backgroundColor: const Color.fromARGB(124, 138, 138, 141),
-        centerTitle: true,
         elevation: 5,
       ),
-      body: Center(
+      body: Padding(
+        padding: EdgeInsets.all(20),
         child: _isLoading
-            ? CircularProgressIndicator(color: Colors.white)
+            ? Center(child: CircularProgressIndicator(color: Colors.white))
             : _userData == null
-                ? Text("Failed to load user data", style: TextStyle(color: Colors.white, fontSize: 16))
+                ? Center(child: Text("Failed to load user data", style: TextStyle(color: Colors.white, fontSize: 16)))
                 : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: NetworkImage(gravatarUrl),
-                        backgroundColor: Colors.grey[700],
+                      // Profile Row
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundImage: NetworkImage(gravatarUrl),
+                            backgroundColor: Colors.grey[700],
+                          ),
+                          SizedBox(width: 15),
+                          GestureDetector(
+                            onTap: _copyEmailToClipboard,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _userData!['email'] ?? "No Email",
+                                  style: TextStyle(fontSize: 18, color: Colors.white70, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  "Tap to copy",
+                                  style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 15),
-                      GestureDetector(
-                        onTap: _copyEmailToClipboard,
+                      SizedBox(height: 20),
+
+                      // Profile Details
+                      Container(
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF393E46),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Profile Details", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                            Divider(color: Colors.grey[500]),
+                            Text("Joined On: $formattedCreatedAt", style: TextStyle(color: Colors.white70)),
+                            Text("Last Login: $formattedLastLogin", style: TextStyle(color: Colors.white70)),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+
+                      // Menu Options
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildMenuItem(Icons.category, "Categories"),
+                          _buildMenuItem(Icons.person_add, "Invite Friends"),
+                          _buildMenuItem(Icons.notifications, "Notifications"),
+                          _buildMenuItem(Icons.delete, "Clear Transactions"),
+                        ],
+                      ),
+
+                      Spacer(),
+
+                      // Logout Button
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _logout,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: Text("Logout", style: TextStyle(fontSize: 16, color: Colors.white)),
+                        ),
+                      ),
+
+                      SizedBox(height: 20),
+
+                      // Quote of the Day
+                      Center(
                         child: Text(
-                          _userData!['email'] ?? "No Email",
-                          style: TextStyle(fontSize: 18, color: Colors.white70, decoration: TextDecoration.underline),
+                          "\"A budget is telling your money where to go instead of wondering where it went.\"",
+                          style: TextStyle(fontSize: 14, color: Colors.grey[400], fontStyle: FontStyle.italic),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      SizedBox(height: 10),
-                      Text("Joined: ${_userData!['createdAt']}", style: TextStyle(color: Colors.white70), textAlign: TextAlign.center),
-                      Text("Last Login: ${_userData!['lastSignInAt']}", style: TextStyle(color: Colors.white70), textAlign: TextAlign.center),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _logout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: Text("Logout", style: TextStyle(fontSize: 16, color: Colors.white)),
-                      ),
                     ],
                   ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white70, size: 22),
+          SizedBox(width: 10),
+          Text(title, style: TextStyle(color: Colors.white, fontSize: 16)),
+        ],
       ),
     );
   }
