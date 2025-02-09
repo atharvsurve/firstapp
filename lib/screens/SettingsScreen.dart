@@ -1,8 +1,5 @@
-import 'package:firstapp/supabase/SupabaseServices.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
+import 'package:firstapp/supabase/SupabaseServices.dart';
 import 'package:intl/intl.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,25 +20,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _fetchUserData() async {
-    try {
-      var userData = await SupabaseService().fetchUserDetails();
-      setState(() {
-        _userData = userData;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print("Error fetching user data: $e");
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _copyEmailToClipboard() {
-    if (_userData?['email'] != null) {
-      Clipboard.setData(ClipboardData(text: _userData!['email']));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Email copied to clipboard!")),
-      );
-    }
+    var userData = await SupabaseService().fetchUserDetails();
+    setState(() {
+      _userData = userData;
+      _isLoading = false;
+    });
   }
 
   Future<void> _logout() async {
@@ -51,8 +34,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text("Logout"),
         content: Text("Are you sure you want to log out?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Logout")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Logout", style: TextStyle(color: Colors.red))),
         ],
       ),
     );
@@ -65,10 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String gravatarUrl = _userData?['email'] != null
-        ? "https://www.gravatar.com/avatar/${md5.convert(utf8.encode(_userData!['email']))}?d=identicon"
-        : "https://www.gravatar.com/avatar/?d=identicon";
-
     String formattedCreatedAt = _userData?['createdAt'] != null
         ? DateFormat.yMMMd().format(DateTime.parse(_userData!['createdAt']))
         : "N/A";
@@ -76,121 +59,150 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String formattedLastLogin = _userData?['lastSignInAt'] != null
         ? DateFormat.yMMMd().format(DateTime.parse(_userData!['lastSignInAt']))
         : "N/A";
-
     return Scaffold(
       backgroundColor: Color(0xFF222831),
       appBar: AppBar(
-        title: Text("Profile", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color.fromARGB(124, 138, 138, 141),
-        elevation: 5,
+        title: Text("Profile",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold)),
+        backgroundColor: Color(0xFF2E3B4E),
+        elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Colors.white))
-            : _userData == null
-                ? Center(child: Text("Failed to load user data", style: TextStyle(color: Colors.white, fontSize: 16)))
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile Row
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundImage: NetworkImage(gravatarUrl),
-                            backgroundColor: Colors.grey[700],
-                          ),
-                          SizedBox(width: 15),
-                          GestureDetector(
-                            onTap: _copyEmailToClipboard,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _userData!['email'] ?? "No Email",
-                                  style: TextStyle(fontSize: 18, color: Colors.white70, fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Tap to copy",
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Profile Avatar
+            CircleAvatar(
+              radius: 55,
+              backgroundColor: Colors.white10,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: AssetImage("assets/atharv pic.jpg"),
+                backgroundColor: Colors.grey[700],
+              ),
+            ),
+            SizedBox(height: 12),
 
-                      // Profile Details
-                      Container(
-                        padding: EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF393E46),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Profile Details", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                            Divider(color: Colors.grey[500]),
-                            Text("Joined On: $formattedCreatedAt", style: TextStyle(color: Colors.white70)),
-                            Text("Last Login: $formattedLastLogin", style: TextStyle(color: Colors.white70)),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 20),
+            // User Info
+            Text(
+              "Atharv Surve",
+              style: TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text(
+              _userData?['email'] ?? "No Email",
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w300),
+            ),
+            SizedBox(height: 20),
 
-                      // Menu Options
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildMenuItem(Icons.category, "Categories"),
-                          _buildMenuItem(Icons.person_add, "Invite Friends"),
-                          _buildMenuItem(Icons.notifications, "Notifications"),
-                          _buildMenuItem(Icons.delete, "Clear Transactions"),
-                        ],
-                      ),
+            // Profile Details Card
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Color(0xFF393E46),
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 5,
+                      offset: Offset(0, 3))
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Profile Details",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
+                  Divider(color: Colors.grey[500], thickness: 1, endIndent: 20),
+                  Text("Joined On: $formattedCreatedAt",
+                      style: TextStyle(color: Colors.white70)),
+                  Text("Last Login: $formattedLastLogin",
+                      style: TextStyle(color: Colors.white70)),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
 
-                      Spacer(),
+            // Menu Options
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildMenuItem(Icons.category, "Categories"),
+                _buildMenuItem(Icons.person_add, "Invite Friends"),
+                _buildMenuItem(Icons.notifications, "Notifications"),
+                _buildMenuItem(Icons.delete, "Clear Transactions"),
+              ],
+            ),
+            SizedBox(height: 20),
 
-                      // Logout Button
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: _logout,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          child: Text("Logout", style: TextStyle(fontSize: 16, color: Colors.white)),
-                        ),
-                      ),
-
-                      SizedBox(height: 20),
-
-                      // Quote of the Day
-                      Center(
-                        child: Text(
-                          "\"A budget is telling your money where to go instead of wondering where it went.\"",
-                          style: TextStyle(fontSize: 14, color: Colors.grey[400], fontStyle: FontStyle.italic),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
+            // Logout Button (Standalone, Below Settings)
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 20),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black38,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
                   ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  "Logout",
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildMenuItem(IconData icon, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Color(0xFF393E46),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ],
+      ),
       child: Row(
         children: [
           Icon(icon, color: Colors.white70, size: 22),
-          SizedBox(width: 10),
+          SizedBox(width: 12),
           Text(title, style: TextStyle(color: Colors.white, fontSize: 16)),
         ],
       ),

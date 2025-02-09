@@ -2,7 +2,7 @@ import 'package:firstapp/supabase/SupabaseServices.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firstapp/models/Expense.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:intl/intl.dart';
 
 class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
@@ -13,10 +13,10 @@ class InsightsScreen extends StatefulWidget {
 
 class _InsightsScreenState extends State<InsightsScreen> {
   List<Expense> _expenses = [];
-  List<String> _dates = []; // List of unique dates
+  List<String> _dates = [];
   Map<String, Map<String, double>> _dateCategoryTotals = {};
   bool _isLoading = true;
-  int _currentPage = 0; // Current Page Index
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -24,28 +24,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
     _fetchExpenses();
   }
 
-  // Fetch expenses from Supabase and categorize them by date and category
-  // If any other way to simplify this logic please go ahead and try that 
   Future<void> _fetchExpenses() async {
     try {
       setState(() => _isLoading = true);
-
       List<Expense> expenses = await SupabaseService().fetchExpenses();
 
-      // Group expenses by date, then by category
       Map<String, Map<String, double>> dateCategoryTotals = {};
-      Set<String> uniqueDates = {}; // Store unique dates
+      Set<String> uniqueDates = {};
 
       for (var expense in expenses) {
         String expenseDate = expense.date;
         String category = expense.category;
+        uniqueDates.add(expenseDate);
 
-        uniqueDates.add(expenseDate); // Add unique date
-
-        if (!dateCategoryTotals.containsKey(expenseDate)) {
-          dateCategoryTotals[expenseDate] = {};
-        }
-
+        dateCategoryTotals.putIfAbsent(expenseDate, () => {});
         dateCategoryTotals[expenseDate]![category] =
             (dateCategoryTotals[expenseDate]![category] ?? 0) + expense.amount;
       }
@@ -53,8 +45,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       setState(() {
         _expenses = expenses;
         _dateCategoryTotals = dateCategoryTotals;
-        _dates = uniqueDates.toList()
-          ..sort((a, b) => b.compareTo(a)); // Sort latest first
+        _dates = uniqueDates.toList()..sort((a, b) => b.compareTo(a));
         _isLoading = false;
       });
     } catch (e) {
@@ -69,6 +60,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
       backgroundColor: Color(0xFF222831),
       body: RefreshIndicator(
         onRefresh: _fetchExpenses,
+        color: Colors.blueAccent,
         child: _isLoading
             ? Center(child: CircularProgressIndicator(color: Colors.white))
             : _dateCategoryTotals.isEmpty
@@ -104,89 +96,101 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  // Page Indicator (Dots) , will decide if have to keep it or not 
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_dates.length, (index) {
-        return Container(
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300),
           margin: EdgeInsets.symmetric(horizontal: 4),
-          width: _currentPage == index ? 12 : 8,
-          height: _currentPage == index ? 12 : 8,
+          width: _currentPage == index ? 14 : 8,
+          height: _currentPage == index ? 14 : 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _currentPage == index ? Colors.blueAccent : Colors.grey,
+            color: _currentPage == index ? Colors.blueAccent : Colors.grey[600],
+            boxShadow: [
+              if (_currentPage == index)
+                BoxShadow(color: Colors.blueAccent, blurRadius: 8),
+            ],
           ),
         );
       }),
     );
   }
 
-  // Build Pie Chart for a specific date here 
   Widget _buildDatePieChart(String date, Map<String, double> categoryTotals) {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Color(0xFF222831),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Color(0xFFD9D9D9)),
+          gradient: LinearGradient(
+            colors: [Color(0xFF2E3B4E), Color(0xFF222831)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 8,
+                offset: Offset(0, 4)),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              _formatDate(date), 
+              _formatDate(date),
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 15),
-            Expanded(child: _buildPieChart(categoryTotals)), 
+            SizedBox(height: 20),
+            Expanded(child: _buildPieChart(categoryTotals)),
           ],
         ),
       ),
     );
   }
 
-  // Build Pie Chart Based on Category Totals for a Specific Date
   Widget _buildPieChart(Map<String, double> categoryTotals) {
     return PieChart(
       PieChartData(
-        sectionsSpace: 2,
+        sectionsSpace: 3,
         centerSpaceRadius: 50,
         sections: categoryTotals.entries.map((entry) {
           return PieChartSectionData(
             value: entry.value,
             title: "${entry.key}\n₹${entry.value.toStringAsFixed(2)}",
             color: _getCategoryColor(entry.key),
-            radius: 90, 
+            radius: 95,
             titleStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
+            showTitle: true,
           );
         }).toList(),
+        borderData: FlBorderData(show: false),
+        startDegreeOffset: 180,
       ),
     );
   }
 
-  // Assign a unique color for each category
   Color _getCategoryColor(String category) {
     final Map<String, Color> categoryColors = {
       'Food': Color(0xFF3498DB),
       'Utilities': Color(0xFF2ECC71),
       'Entertainment': Color(0xFFE67E22),
       'Transport': Color(0xFFE74C3C),
-      'Others': Color(0xFF9B59B6), 
+      'Others': Color(0xFF9B59B6),
     };
     return categoryColors[category] ?? Colors.grey;
   }
-
 
   String _formatDate(String date) {
     DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(date);
@@ -200,7 +204,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         DateFormat('yyyy-MM-dd').format(yesterday)) {
       return "Yesterday";
     } else {
-      return DateFormat('dd MMM yyyy').format(parsedDate); // E.g., 05 Feb 2024
+      return DateFormat('dd MMM yyyy').format(parsedDate);
     }
   }
 }
