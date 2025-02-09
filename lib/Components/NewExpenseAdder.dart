@@ -180,12 +180,13 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
                   lastDate: DateTime(2101),
                 );
                 if (pickedDate != null) {
-                  setState(() {
-                    widget.dateController.text =
-                        "${pickedDate.toLocal()}".split(' ')[0];
-                  });
-                }
-              },
+  setState(() {
+    widget.dateController.text =
+        "${pickedDate!.toLocal()}".split(' ')[0];
+  });
+}
+
+                            },
             ),
             SizedBox(height: 25),
 

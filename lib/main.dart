@@ -1,17 +1,20 @@
+import 'package:flutter/material.dart';
+import 'package:firstapp/screens/auth/LoginScreen.dart';
 import 'package:firstapp/app.dart';
 import 'package:firstapp/supabase/SupabaseServices.dart';
-import 'package:flutter/material.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await SupabaseService().initialize(); // Ensure Supabase is initialized
+
+
+void main() async{
+
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure async operations are allowed before runApp
+  await SupabaseService().initialize(); // Initialize Supabase before using it
+
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -24,4 +27,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
