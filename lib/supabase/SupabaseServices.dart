@@ -138,4 +138,23 @@ class SupabaseService {
       return []; 
     }
   }
+
+   // Fetch user details using Supabase's built-in method
+   Future<Map<String, dynamic>?> fetchUserDetails() async {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return null;
+
+  return {
+    "email": user.email,
+    "createdAt": user.createdAt.toString(),
+    "lastSignInAt": user.lastSignInAt.toString(),
+  };
+}
+
+
+  // Logout function
+  Future<void> logout() async {
+    await Supabase.instance.client.auth.signOut();
+  }
+
 }
