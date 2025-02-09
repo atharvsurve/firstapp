@@ -103,7 +103,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  // Page Indicator (Dots)
+  // Page Indicator (Dots) , will decide if have to keep it or not 
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -121,7 +121,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     );
   }
 
-  // Build Pie Chart for a specific date
+  // Build Pie Chart for a specific date here 
   Widget _buildDatePieChart(String date, Map<String, double> categoryTotals) {
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -136,7 +136,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _formatDate(date), // Format date for display
+              _formatDate(date), 
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -144,7 +144,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               ),
             ),
             SizedBox(height: 15),
-            Expanded(child: _buildPieChart(categoryTotals)), // Pie Chart
+            Expanded(child: _buildPieChart(categoryTotals)), 
           ],
         ),
       ),
@@ -162,7 +162,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             value: entry.value,
             title: "${entry.key}\n₹${entry.value.toStringAsFixed(2)}",
             color: _getCategoryColor(entry.key),
-            radius: 90, // Larger for better visibility
+            radius: 90, 
             titleStyle: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -177,16 +177,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
   // Assign a unique color for each category
   Color _getCategoryColor(String category) {
     final Map<String, Color> categoryColors = {
-      'Food': Color(0xFF3498DB), // Blue
-      'Utilities': Color(0xFF2ECC71), // Green
-      'Entertainment': Color(0xFFE67E22), // Orange
-      'Transport': Color(0xFFE74C3C), // Red
-      'Others': Color(0xFF9B59B6), // Purple
+      'Food': Color(0xFF3498DB),
+      'Utilities': Color(0xFF2ECC71),
+      'Entertainment': Color(0xFFE67E22),
+      'Transport': Color(0xFFE74C3C),
+      'Others': Color(0xFF9B59B6), 
     };
     return categoryColors[category] ?? Colors.grey;
   }
 
-  // Format Date Display
+
   String _formatDate(String date) {
     DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(date);
     DateTime now = DateTime.now();
