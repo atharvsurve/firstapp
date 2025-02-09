@@ -19,7 +19,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF222831), // Dark background for the page
+      backgroundColor: Color(0xFF222831), 
       body: SingleChildScrollView(
         child: Column(
           children: [
