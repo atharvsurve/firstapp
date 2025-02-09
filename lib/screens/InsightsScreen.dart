@@ -25,6 +25,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   // Fetch expenses from Supabase and categorize them by date and category
+  // If any other way to simplify this logic please go ahead and try that 
   Future<void> _fetchExpenses() async {
     try {
       setState(() => _isLoading = true);
