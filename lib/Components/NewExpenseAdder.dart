@@ -23,9 +23,7 @@ class NewExpenseAdder extends StatefulWidget {
 
 class _NewExpenseAdderState extends State<NewExpenseAdder> {
   String? _selectedCategory = 'Food'; // Default selected category
-  TextEditingController _otherCategoryController = TextEditingController();
 
-  // List of predefined categories
   final List<String> _categories = [
     'Food',
     'Utilities',
@@ -93,7 +91,6 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
             ),
             SizedBox(height: 20),
 
-            // Category Field (Dropdown with "Other" option)
             DropdownButtonFormField<String>(
               dropdownColor: Color(0xFF31363F), // Dark background for dropdown
               value: _selectedCategory,
@@ -180,13 +177,12 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
                   lastDate: DateTime(2101),
                 );
                 if (pickedDate != null) {
-  setState(() {
-    widget.dateController.text =
-        "${pickedDate!.toLocal()}".split(' ')[0];
-  });
-}
-
-                            },
+                  setState(() {
+                    widget.dateController.text =
+                        "${pickedDate!.toLocal()}".split(' ')[0];
+                  });
+                }
+              },
             ),
             SizedBox(height: 25),
 
@@ -196,9 +192,7 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
                 onPressed: () async {
                   // Handle the submit action here (send data to the database)
                   String expenseName = widget.expenseNameController.text;
-                  String category = _selectedCategory == 'Other'
-                      ? _otherCategoryController.text
-                      : _selectedCategory!;
+                  String category = _selectedCategory!;
                   double amount = double.parse(widget.amountController.text);
                   String date = widget.dateController.text;
 
@@ -209,7 +203,6 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
                     amount: amount,
                     date: date,
                   );
-
                   // Add the expense to Supabase
                   await SupabaseService().addExpense(expense);
                   showCustomSnackbar(
@@ -222,8 +215,7 @@ class _NewExpenseAdderState extends State<NewExpenseAdder> {
                     widget.expenseNameController.clear();
                     widget.amountController.clear();
                     widget.dateController.clear();
-                    _selectedCategory = 'Food'; // Reset dropdown to default
-                    _otherCategoryController.clear();
+                    _selectedCategory = 'Food';
                   });
                 },
                 style: ElevatedButton.styleFrom(

@@ -1,4 +1,3 @@
-import 'package:firstapp/screens/auth/RegisterScreen.dart';
 import 'package:firstapp/screens/auth/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'screens/InsightsScreen.dart';
